@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -16,6 +17,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -64,6 +67,27 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
+            }
+        });
+
+        Button btnAddValue = (Button)findViewById(R.id.btn_add_value);
+        btnAddValue.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseDatabase db = FirebaseDatabase.getInstance();
+                DatabaseReference rfMsg = db.getReference("message");
+
+                rfMsg.push().setValue("Test Message " + new Random().nextInt(1000), new DatabaseReference.CompletionListener() {
+                    @Override
+                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                        if(databaseError == null){
+                            Log.d(TAG, "Add Value Complete");
+                        }
+                        else {
+                            Log.e(TAG, "Add Value Error : " + databaseError.toException());
+                        }
+                    }
+                });
             }
         });
     }
