@@ -77,7 +77,9 @@ app.get('/search/:arg1' , function(req,res_parent) {
             for( var i = 0 ; i < JSON.parse(body).items.length ; ++i) {
                 var title = JSON.parse(body).items[i].snippet.title;
                 var thumnails = JSON.parse(body).items[i].snippet.thumbnails.default.url;
-                list.push({title:title, thumnails:thumnails});
+                var chtitle = JSON.parse(body).items[i].snippet.channelTitle;
+                var id = JSON.parse(body).items[i].id.videoId;
+                list.push({id:id, title:title, thumnails:thumnails, chtitle:chtitle});
             }
             res_parent.send(list);
         });
