@@ -1,10 +1,13 @@
 var express = require('express');
+var urlencode = require('urlencode');
 var request = require('request');
+var cheerio = require('cheerio')
 var xml2js = require('xml2js');
 var xmlParser = xml2js.Parser();
 var app = express();
 const dataAPIKey = '%2BldNua%2Fn0VEJt%2BtrwNRRz74Mvewgmu%2Fwz3P%2Fxtrc4GD%2BKO5Zx6oNgWYAaLpuTuBrWI6eCRMrgui%2BbdMVFvl4HQ%3D%3D';
 const weatherFreeAPIKey = '42d9865a1ddccdaa8f5d2bd8494a3f6b'
+const youtubeBrowerKey = 'AIzaSyCKfmVmbkI1-bFKVanEOwFTBDQr6sKZOuw'
 
 app.get('/parkinginfo', function (req, res_parent) {
 
@@ -57,6 +60,34 @@ app.get('/terminalinfo/:no', function (req, res_parent) {
     }
 });
 
+app.get('/search/:arg1' , function(req,res_parent) {
+    var reqOptions = {
+        url: 'https://www.googleapis.com/youtube/v3/search?part=snippet&key='+youtubeBrowerKey+'&maxResults=20&type=video&q='+urlencode(req.params.arg1),
+        method: 'GET',
+        headers: {
+            'Accept' : 'application/xml',
+            'Accept-Charset' : 'utf-8',
+            'User-Agent' : 'my-reddit-client'
+        }
+    };
+
+    try {
+        request( reqOptions, function(err, res, body) {
+            var list = []
+            for( var i = 0 ; i < JSON.parse(body).items.length ; ++i) {
+                var title = JSON.parse(body).items[i].snippet.title;
+                var thumnails = JSON.parse(body).items[i].snippet.thumbnails.default.url;
+                list.push({title:title, thumnails:thumnails});
+            }
+            res_parent.send(list);
+        });
+    }
+    catch(err) {
+        console.log(err);
+        res_parent.end(err);
+    }
+})
+
 app.listen(4000, function() {
-    console.log('Example app listening on port 4000!');
+    console.log('Today\'s Video listening on port 4000!');
 })
