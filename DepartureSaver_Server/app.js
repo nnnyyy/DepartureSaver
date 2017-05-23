@@ -79,9 +79,41 @@ app.get('/search/:arg1' , function(req,res_parent) {
                 var thumnails = JSON.parse(body).items[i].snippet.thumbnails.default.url;
                 var chtitle = JSON.parse(body).items[i].snippet.channelTitle;
                 var id = JSON.parse(body).items[i].id.videoId;
+                var nextPageToken = JSON.parse(body).items[i].nextPageToken;
+                var prevPageToken = JSON.parse(body).items[i].prevPageToken;
                 list.push({id:id, title:title, thumnails:thumnails, chtitle:chtitle});
             }
-            res_parent.send(list);
+            res_parent.send({prevToken:prevPageToken, nextToken:nextPageToken, contents:list});
+        });
+    }
+    catch(err) {
+        console.log(err);
+        res_parent.end(err);
+    }
+})
+
+app.get('/videosinfo/:arg1' , function(req,res_parent) {
+    var reqOptions = {
+        url: 'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&key='+youtubeBrowerKey+'&id='+req.params.arg1,
+        method: 'GET',
+        headers: {
+            'Accept' : 'application/xml',
+            'Accept-Charset' : 'utf-8',
+            'User-Agent' : 'my-reddit-client'
+        }
+    };
+
+    try {
+        request( reqOptions, function(err, res, body) {
+            var list = []
+            for( var i = 0 ; i < JSON.parse(body).items.length ; ++i) {
+                var item = JSON.parse(body).items[i];
+                var id = item.id;
+                var duration = item.contentDetails.duration;
+                var definition = item.contentDetails.definition;
+                list.push({id:id, duration: duration, definition:definition});
+            }
+            res_parent.send({contents:list});
         });
     }
     catch(err) {
