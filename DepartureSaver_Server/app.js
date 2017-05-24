@@ -74,13 +74,13 @@ app.get('/search/:arg1' , function(req,res_parent) {
     try {
         request( reqOptions, function(err, res, body) {
             var list = []
+            var nextPageToken = JSON.parse(body).nextPageToken;
+            var prevPageToken = JSON.parse(body).prevPageToken;
             for( var i = 0 ; i < JSON.parse(body).items.length ; ++i) {
                 var title = JSON.parse(body).items[i].snippet.title;
                 var thumnails = JSON.parse(body).items[i].snippet.thumbnails.default.url;
                 var chtitle = JSON.parse(body).items[i].snippet.channelTitle;
                 var id = JSON.parse(body).items[i].id.videoId;
-                var nextPageToken = JSON.parse(body).items[i].nextPageToken;
-                var prevPageToken = JSON.parse(body).items[i].prevPageToken;
                 list.push({id:id, title:title, thumnails:thumnails, chtitle:chtitle});
             }
             res_parent.send({prevToken:prevPageToken, nextToken:nextPageToken, contents:list});
