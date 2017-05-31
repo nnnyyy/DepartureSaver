@@ -24,13 +24,43 @@ app.get('/parkinginfo', function (req, res_parent) {
     try {
         request( reqOptions, function(err, res, body) {
             xmlParser.parseString(body, function(err, result) {
-                res_parent.send(result.response.body[0].items[0].item);
+                var retCode = result.response.header[0].resultCode[0]
+                var contentbody = result.response.body[0]
+                var items = contentbody.items
+                if(retCode == "00") {
+                    var list = []
+                    do {
+                        if(items[0] == null || items[0].item == null) {
+                            retCode = "99"
+                            break
+                        }
+                        var contentLen = items[0].item.length
+                        try {
+                            for( var i = 0 ; i < contentLen ; ++i) {
+                                var data = items[0].item[i]
+                                var tm = data.datetm[0]
+                                var floor = data.floor[0]
+                                var parkingarea = data.parkingarea[0]
+                                var parking = data.parking[0]
+                                list.push({name:floor, time:tm, parking:parking, parkingarea: parkingarea})
+                            }
+                        }
+                        catch(e) {
+                            retCode = "99"
+                        }
+                    }while(false);
+
+                    res_parent.send({ret:retCode, list:list});
+                }
+                else {
+                    res_parent.send({ret:retCode});
+                }
             })
         });
     }
     catch(err) {
         console.log(err);
-        res_parent.end(err);
+        res_parent.end({ret:"100"});
     }
 });
 
@@ -50,77 +80,51 @@ app.get('/terminalinfo/:no', function (req, res_parent) {
     try {
         request( reqOptions, function(err, res, body) {
             xmlParser.parseString(body, function(err, result) {
-                res_parent.send(result.response.body[0].items[0].item);
+                var retCode = result.response.header[0].resultCode[0]
+                if(retCode == "00") {
+                    do {
+                        var depainfos = []
+                        if( result.response.body[0].items[0].item == null) {
+                            retCode = "99"
+                            break;
+                        }
+                        var item = result.response.body[0].items[0].item[0]
+                        var refreshDate = item.cgtdt[0]
+                        var refreshTime = item.cgthm[0]
+                        var depa2gate = item.cgtlvlg2[0]
+                        var depa3gate = item.cgtlvlg3[0]
+                        var depa4gate = item.cgtlvlg4[0]
+                        var depa5gate = item.cgtlvlg5[0]
+                        var depa2waiting = item.pwcntg2[0]
+                        var depa3waiting = item.pwcntg3[0]
+                        var depa4waiting = item.pwcntg4[0]
+                        var depa5waiting = item.pwcntg5[0]
+                        depainfos.push({name:"2번 출국장", lvlg:depa2gate, wait: depa2waiting})
+                        depainfos.push({name:"3번 출국장", lvlg:depa3gate, wait: depa3waiting})
+                        depainfos.push({name:"4번 출국장", lvlg:depa4gate, wait: depa4waiting})
+                        depainfos.push({name:"5번 출국장", lvlg:depa5gate, wait: depa5waiting})
+                    }while(false);
+
+                    // depa2waiting
+                    // depa2gate value
+                    // 0 = 원활
+                    // 1 = 보통
+                    // 2 = 혼잡
+                    // 3 = 매우 혼잡
+                    // 9 = 종료
+                    res_parent.send({ret:retCode,refreshDate:refreshDate, refreshTime: refreshTime, data:depainfos});
+                }
+                else {
+                    res_parent.send({ret:retCode});
+                }
             })
         });
     }
     catch(err) {
         console.log(err);
-        res_parent.end(err);
+        res_parent.end({ret:"100"});
     }
 });
-
-app.get('/search/:arg1' , function(req,res_parent) {
-    var reqOptions = {
-        url: 'https://www.googleapis.com/youtube/v3/search?part=snippet&key='+youtubeBrowerKey+'&maxResults=20&type=video&q='+urlencode(req.params.arg1),
-        method: 'GET',
-        headers: {
-            'Accept' : 'application/xml',
-            'Accept-Charset' : 'utf-8',
-            'User-Agent' : 'my-reddit-client'
-        }
-    };
-
-    try {
-        request( reqOptions, function(err, res, body) {
-            var list = []
-            var nextPageToken = JSON.parse(body).nextPageToken;
-            var prevPageToken = JSON.parse(body).prevPageToken;
-            for( var i = 0 ; i < JSON.parse(body).items.length ; ++i) {
-                var title = JSON.parse(body).items[i].snippet.title;
-                var thumnails = JSON.parse(body).items[i].snippet.thumbnails.default.url;
-                var chtitle = JSON.parse(body).items[i].snippet.channelTitle;
-                var id = JSON.parse(body).items[i].id.videoId;
-                list.push({id:id, title:title, thumnails:thumnails, chtitle:chtitle});
-            }
-            res_parent.send({prevToken:prevPageToken, nextToken:nextPageToken, contents:list});
-        });
-    }
-    catch(err) {
-        console.log(err);
-        res_parent.end(err);
-    }
-})
-
-app.get('/videosinfo/:arg1' , function(req,res_parent) {
-    var reqOptions = {
-        url: 'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&key='+youtubeBrowerKey+'&id='+req.params.arg1,
-        method: 'GET',
-        headers: {
-            'Accept' : 'application/xml',
-            'Accept-Charset' : 'utf-8',
-            'User-Agent' : 'my-reddit-client'
-        }
-    };
-
-    try {
-        request( reqOptions, function(err, res, body) {
-            var list = []
-            for( var i = 0 ; i < JSON.parse(body).items.length ; ++i) {
-                var item = JSON.parse(body).items[i];
-                var id = item.id;
-                var duration = item.contentDetails.duration;
-                var definition = item.contentDetails.definition;
-                list.push({id:id, duration: duration, definition:definition});
-            }
-            res_parent.send({contents:list});
-        });
-    }
-    catch(err) {
-        console.log(err);
-        res_parent.end(err);
-    }
-})
 
 app.listen(4000, function() {
     console.log('Today\'s Video listening on port 4000!');
