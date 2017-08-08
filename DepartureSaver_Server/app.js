@@ -99,19 +99,19 @@ app.get('/terminalinfo/:no', function (req, res_parent) {
                         var depa3waiting = item.pwcntg3[0]
                         var depa4waiting = item.pwcntg4[0]
                         var depa5waiting = item.pwcntg5[0]
-                        depainfos.push({name:"2¹ø Ãâ±¹Àå", lvlg:depa2gate, wait: depa2waiting})
-                        depainfos.push({name:"3¹ø Ãâ±¹Àå", lvlg:depa3gate, wait: depa3waiting})
-                        depainfos.push({name:"4¹ø Ãâ±¹Àå", lvlg:depa4gate, wait: depa4waiting})
-                        depainfos.push({name:"5¹ø Ãâ±¹Àå", lvlg:depa5gate, wait: depa5waiting})
+                        depainfos.push({name:"2ë²ˆ ê²Œì´íŠ¸", lvlg:depa2gate, wait: depa2waiting})
+                        depainfos.push({name:"3ë²ˆ ê²Œì´íŠ¸", lvlg:depa3gate, wait: depa3waiting})
+                        depainfos.push({name:"4ë²ˆ ê²Œì´íŠ¸", lvlg:depa4gate, wait: depa4waiting})
+                        depainfos.push({name:"5ë²ˆ ê²Œì´íŠ¸", lvlg:depa5gate, wait: depa5waiting})
                     }while(false);
 
                     // depa2waiting
                     // depa2gate value
-                    // 0 = ¿øÈ°
-                    // 1 = º¸Åë
-                    // 2 = È¥Àâ
-                    // 3 = ¸Å¿ì È¥Àâ
-                    // 9 = Á¾·á
+                    // 0 = ï¿½ï¿½È°
+                    // 1 = ï¿½ï¿½ï¿½ï¿½
+                    // 2 = È¥ï¿½ï¿½
+                    // 3 = ï¿½Å¿ï¿½ È¥ï¿½ï¿½
+                    // 9 = ï¿½ï¿½ï¿½ï¿½
                     res_parent.send({ret:retCode,refreshDate:refreshDate, refreshTime: refreshTime, data:depainfos});
                 }
                 else {
@@ -126,6 +126,6 @@ app.get('/terminalinfo/:no', function (req, res_parent) {
     }
 });
 
-app.listen(4000, function() {
-    console.log('Today\'s Video listening on port 4000!');
+app.listen(4343, function() {
+    console.log('Departure Saver Listening... 4343!');
 })
