@@ -126,6 +126,70 @@ app.get('/terminalinfo/:no', function (req, res_parent) {
     }
 });
 
+app.get('/PassengerNotice/:no', function (req, res_parent) {
+
+    var no = req.params.no;
+    var reqOptions = {
+        url: 'http://openapi.airport.kr/openapi/service/PassengerNoticeKR/getfPassengerNoticeIKR?serviceKey='+dataAPIKey+'&selectdate=' + no,
+        method: 'GET',
+        headers: {
+            'Accept' : 'application/xml',
+            'Accept-Charset' : 'utf-8',
+            'User-Agent' : 'my-reddit-client'
+        }
+    };
+
+    try {
+        request( reqOptions, function(err, res, body) {
+            xmlParser.parseString(body, function(err, result) {
+                var retCode = result.response.header[0].resultCode[0]
+                if(retCode == "00") {
+                    do {
+                        var passnotis = []
+                        if( result.response.body[0].items[0].item == null) {
+                            retCode = "99"
+                            break;
+                        }
+
+                        var items = result.response.body[0].items[0].item;
+
+                        for( var i = 0 ; i < items.length ; ++i ) {
+                            var item = items[i];
+                            console.log(item);
+                            passnotis.push(
+                                {
+                                    adate: item.adate[0],
+                                    atime:  item.atime[0],
+                                    sum1: item.sum1[0],
+                                    sum2: item.sum2[0],
+                                    sum3: item.sum3[0],
+                                    sum4: item.sum4[0],
+                                    sum5: item.sum5[0],
+                                    sum6: item.sum6[0],
+                                    sum7: item.sum7[0],
+                                    sum8: item.sum8[0],
+                                    sumset1: item.sumset1[0],
+                                    sumset2: item.sumset2[0]
+                                }
+                            );
+                        }
+
+                    }while(false);
+
+                    res_parent.send({ret:retCode, data:passnotis});
+                }
+                else {
+                    res_parent.send({ret:retCode});
+                }
+            })
+        });
+    }
+    catch(err) {
+        console.log(err);
+        res_parent.end({ret:"100"});
+    }
+});
+
 app.listen(4343, function() {
     console.log('Departure Saver Listening... 4343!');
 })
